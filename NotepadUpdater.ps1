@@ -1,27 +1,54 @@
 # Notepad Updater 
 # Mike Harris
 # Last updated 11-10-2023
-# Creates backup of plugins folder, installs updated version and copies back over plugin folder. 
 
-$PluginsPath = 'C:\Program Files\Notepad++\plugins'
+#Find out install location and verify version installed 32bit or 64bit 
 
-#"Test to see if folder [$Folder]  exists"
-if (Test-Path -Path $PluginsPath) {
-        #Create new folder 
-        $TempPluginHolder = 'C:\Notepad++Temp'
-        New-Item -Path $TempPluginHolder -ItemType Directory
+$uninstallx64 = Get-ItemProperty HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | where {$_.displayname -like "*Notepad++*"} | Select-Object -Property DisplayName, DisplayVersion, InstallLocation, UninstallString, QuietUninstallString 
 
-        #Copy contents of plugins folder 
-        Copy-Item -Path $PluginsPath -Destination $TempPluginHolder -Recurse
-} 
-else {
-    #DoNothing
+if ($uninstallx64.'InstallLocation' -ne $null) {
+    
+    $PluginsPath = 'C:\Program Files\Notepad++\plugins'
+
+    #"Test to see if folder [$Folder]  exists"
+    if (Test-Path -Path $PluginsPath) {
+            #Create new folder 
+            $TempPluginHolder = 'C:\Notepad++Temp'
+            New-Item -Path $TempPluginHolder -ItemType Directory
+
+            #Copy contents of plugins folder 
+            Copy-Item -Path $PluginsPath -Destination $TempPluginHolder -Recurse 
+    } 
+    Start-Process $uninstallx64.'UninstallString' -ArgumentList "/S"
 }
+#Start-Process $uninstallx64.'UninstallString' -ArgumentList "/S"
+
+$uninstallx86 = Get-ItemProperty HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | where {$_.displayname -like "*Notepad++*"} | Select-Object -Property DisplayName, DisplayVersion, InstallLocation, UninstallString, QuietUninstallString 
+
+if ($uninstallx86.'InstallLocation' -ne $null) {
+    
+    $PluginsPath = 'C:\Program Files (x86)\Notepad++\plugins'
+
+    #"Test to see if folder [$Folder]  exists"
+    if (Test-Path -Path $PluginsPath) {
+            #Create new folder 
+            $TempPluginHolder = 'C:\Notepad++Temp'
+            New-Item -Path $TempPluginHolder -ItemType Directory
+
+            #Copy contents of plugins folder 
+            Copy-Item -Path $PluginsPath -Destination $TempPluginHolder -Recurse 
+    } 
+    #Uninstall existing version
+    Start-Process $uninstallx86.'UninstallString' -ArgumentList "/S"
+}
+#Uninstall existing version
+#Start-Process $uninstallx86.'UninstallString' -ArgumentList "/S"
 
 #Install update to Notepad 
-start-process -FilePath '.\npp.8.5.8.Installer.x64.exe' -ArgumentList '/S' -Verb runas -Wait
+start-process -FilePath './npp.8.5.8.Installer.x64.exe' -ArgumentList '/S' -Verb runas -Wait
 
 #Copy of copied folder moved back (Only if needed) 
+
 Get-ChildItem $TempPluginHolder -Recurse | ForEach {
     $ModifiedDestination = $($_.FullName).Replace("$TempPluginHolder","$PluginsPath")
     If ((Test-Path $ModifiedDestination) -eq $False) {
