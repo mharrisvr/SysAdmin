@@ -62,8 +62,6 @@ $Collections = @('1','2','3','4','5')
 $GUIDs = @('1','2','3','4','5')
 
 #CleanUp functionality.. will re-write into only removing users that no longer are in SCCM collection eventually.. but this is pretty quick to run. 
-<#
-# Still needed**Clean up functionality
 
 for ($i = 0; $i -lt $GUIDs.Count; $i++)
 {
@@ -117,5 +115,5 @@ Foreach ($Col in $Collections) {
             Write-Log -Message "Please Review: $CollectionMember.Name was not added to group" -Severity Warning
             }   
     }
-    $i++
+    $j++
 }
