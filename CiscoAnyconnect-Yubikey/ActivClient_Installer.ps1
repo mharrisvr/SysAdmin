@@ -11,12 +11,12 @@ $SCSerials = certutil -scinfo -silent | Where{$_ -match 'Serial Number: (\S+)'} 
 
 If ($SCSerials -eq $null) { 
     #Write-Host "Hello World, your certifcate is empty"
-	  #Write-Host "Disabling PIV Device" 
+    #Write-Host "Disabling PIV Device" 
     $instanceID = get-pnpdevice -InstanceID "USB\VID_1050&PID_0407&MI_02\*" -Status OK | Disable-PnpDevice -Confirm:$false	
 }
 
 Else {
-    Write-Host "Certificate detected moving on to install ActivClient"
+    #Write-Host "Certificate detected moving on to install ActivClient"
 }
 
 #Install activClient 8.2 
@@ -24,5 +24,19 @@ Else {
 #For SCCM Deployment
 #Write-Host "Installing ActivClient 8.2" 
 msiexec.exe  /i "C:\ActivClient 8.2 install\ActivClient-8.2.0.msi" /q REBOOT=ReallySupress
+
+#Kicks off Machine Policy & Hardware Scans in configuration manager
+$codes = @('000000000001', '000000000021', '000000000002')
+$names = @('Hardware Inventory', 'Machine Policy Assignments Request', 'Software Inventory')
+$i = 0
+
+# Run each of the config mgr actions using each of the codes listed above.
+foreach ($num in $codes)
+{
+	Write-Output " *** $($names[$i]) *** "
+	Invoke-WmiMethod -Namespace root\ccm -Class sms_client -Name TriggerSchedule "{00000000-0000-0000-0000-$num}"
+	$i++
+} 
+
 
 
