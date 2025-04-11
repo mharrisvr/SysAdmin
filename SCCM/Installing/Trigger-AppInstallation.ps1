@@ -1,6 +1,13 @@
 # https://timmyit.com/2016/08/08/sccm-and-powershell-force-installuninstall-of-available-software-in-software-center-through-cimwmi-on-a-remote-client/3
 # Worked Wonderfully to push application out to Software center and install on machines that have a client policy that hides the software, apps, and updates tabs. 
 
+# For example: 
+# Installs Google Chrome on Computer01 
+# Trigger-AppInstallation -Computer "Computer01" -AppName "Google Chrome" -Method Install
+
+#Uninstalls Google Chrome from Computer01
+# Trigger-AppInstallation -Computer "Computer01" -AppName "Google Chrome" -Method Uninstall 
+
 Function Trigger-AppInstallation
 {
  
